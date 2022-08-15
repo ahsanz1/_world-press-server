@@ -1,7 +1,9 @@
+require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 const { JSDOM } = require("jsdom");
 const { Readability } = require("@mozilla/readability");
+const fetchTopHeadlines = require("./utils");
 const app = express();
 
 app.use((req, res, next) => {
@@ -13,7 +15,22 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/complete-article", async (req, res, next) => {
+app.get("/top-headlines", async (req, res) => {
+  try {
+    const { paramString = "" } = req.query;
+    const {
+      articles = [],
+      status = "",
+      totalResults = 0,
+    } = await fetchTopHeadlines(paramString);
+    res.status(200).json({ articles, status, totalResults });
+  } catch (error) {
+    console.log(error);
+    res.send(400).send(error.message);
+  }
+});
+
+app.get("/complete-article", async (req, res) => {
   // Handle the get for this route
   const { url = "" } = req.query;
   if (url) {
@@ -28,8 +45,8 @@ app.get("/complete-article", async (req, res, next) => {
     let article = new Readability(dom.window.document).parse();
 
     // Done! The article content is in the textContent property
-    console.log(article.textContent);
-    res.status(200).send(article.textContent);
+    //console.log(article.textContent);
+    res.status(200).send(article.content);
   } else {
     res.status("404").send("Invalid URL");
   }
