@@ -3,7 +3,7 @@ const express = require("express");
 const axios = require("axios");
 const { JSDOM } = require("jsdom");
 const { Readability } = require("@mozilla/readability");
-const fetchTopHeadlines = require("./utils");
+const { fetchTopHeadlines, searchArticles } = require("./utils");
 const app = express();
 
 app.use((req, res, next) => {
@@ -26,7 +26,35 @@ app.get("/top-headlines", async (req, res) => {
     res.status(200).json({ articles, status, totalResults });
   } catch (error) {
     console.log(error);
-    res.send(400).send(error.message);
+    res.status(400).send(error.message);
+  }
+});
+
+app.get("/author-articles", async (req, res) => {
+  try {
+    const { authorName = "" } = req.query;
+    console.log(authorName);
+    const {
+      articles = [],
+      status = "",
+      totalResults = 0,
+    } = await searchArticles(authorName);
+    const filteredArticles = articles.filter(
+      (aa) =>
+        aa.url &&
+        aa.urlToImage &&
+        !aa.url.includes("youtube") &&
+        aa.author !== null &&
+        aa.author === authorName
+    );
+    res.status(200).json({
+      articles: filteredArticles,
+      status,
+      totalResults: filteredArticles.length,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error.message);
   }
 });
 
