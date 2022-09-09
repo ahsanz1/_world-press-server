@@ -9,11 +9,14 @@ const fs = require("fs");
 const path = require("node:path");
 const { Checkout } = require("checkout-sdk-node");
 const logger = require("heroku-logger");
+const bodyParser = require("body-parser");
 const app = express();
 
 const cko = new Checkout("sk_test_1f05c2d3-0a01-47c8-807e-a10ec17ea170", {
   pk: "pk_test_99ac8b62-1c16-4614-a43e-ea3a998206ef",
 });
+
+app.use(bodyParser.json());
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
@@ -92,10 +95,13 @@ app.get("/complete-article", async (req, res) => {
 });
 
 app.post("/validate-session", async (req, res) => {
-  const { appleUrl = "" } = req.body;
+  console.log("Request Body: ", req.body);
+  const {
+    appleUrl = "https://apple-pay-gateway-cert.apple.com/paymentservices/startSession",
+  } = req.body;
   logger.info("Apple URL: ", { message: appleUrl });
   try {
-    let = httpsAgent = new https.Agent({
+    let httpsAgent = new https.Agent({
       rejectUnauthorized: false,
       cert: await fs.readFileSync(
         path.join(__dirname, "/certificates/certificate_sandbox.pem")
@@ -115,12 +121,13 @@ app.post("/validate-session", async (req, res) => {
         httpsAgent,
       }
     );
-    logger.info("Validate session res: ", { message: response.data });
+    // logger.info("Validate session res: ", { message: response.data });
     res.send(response.data);
   } catch (error) {
     console.log("Error while validating session: ", error);
-    logger.error("Error while validating session: ", { message: error });
-    res.send(error);
+    res.status(400).json({
+      message: error.message,
+    });
   }
 });
 
