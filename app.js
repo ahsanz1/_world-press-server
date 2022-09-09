@@ -4,7 +4,15 @@ const axios = require("axios");
 const { JSDOM } = require("jsdom");
 const { Readability } = require("@mozilla/readability");
 const { fetchTopHeadlines, searchArticles } = require("./utils");
+const https = require("node:https");
+const fs = require("fs");
+const path = require("node:path");
+const { Checkout } = require("checkout-sdk-node");
 const app = express();
+
+const cko = new Checkout("sk_test_1f05c2d3-0a01-47c8-807e-a10ec17ea170", {
+  pk: "pk_test_99ac8b62-1c16-4614-a43e-ea3a998206ef",
+});
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
@@ -61,10 +69,12 @@ app.get("/author-articles", async (req, res) => {
 app.get("/complete-article", async (req, res) => {
   // Handle the get for this route
   const { url = "" } = req.query;
-  if (url) {
+  try {
     const articleHtml = await axios.get(url);
     // We now have the article HTML, but before we can use Readability to locate
     // the article content we need jsdom to convert it into a DOM object
+    console.log(articleHtml);
+
     let dom = new JSDOM(articleHtml.data, {
       url: url,
     });
@@ -73,10 +83,71 @@ app.get("/complete-article", async (req, res) => {
     let article = new Readability(dom.window.document).parse();
 
     // Done! The article content is in the textContent property
-    //console.log(article.textContent);
+    console.log(article);
     res.status(200).send(article.content);
-  } else {
-    res.status("404").send("Invalid URL");
+  } catch (error) {
+    res.status("404").send(error.message);
+  }
+});
+
+app.post("/validate-session", async (req, res) => {
+  const { appleUrl = "" } = req.body;
+  try {
+    let = httpsAgent = new https.Agent({
+      rejectUnauthorized: false,
+      cert: await fs.readFileSync(
+        path.join(__dirname, "/certificates/certificate_sandbox.pem")
+      ),
+      key: await fs.readFileSync(
+        path.join(__dirname, "/certificates/certificate_sandbox.key")
+      ),
+    });
+    let response = await axios.post(
+      appleUrl,
+      {
+        merchantIdentifier: "merchant.com.lazurde.sandbox",
+        domainName: "https://dev-lazurde.vercel.app",
+        displayName: "Lazurde",
+      },
+      {
+        httpsAgent,
+      }
+    );
+    res.send(response.data);
+  } catch (error) {
+    console.log("Error while validating session: ", error);
+    res.send(error);
+  }
+});
+
+app.post("/pay", async (req, res) => {
+  const { version, data, signature, header } = req.body.token.paymentData;
+  try {
+    const checkoutToken = await cko.tokens.request({
+      // infered type: "applepay"
+      token_data: {
+        version: version,
+        data: data,
+        signature: signature,
+        header: {
+          ephemeralPublicKey: header.ephemeralPublicKey,
+          publicKeyHash: header.publicKeyHash,
+          transactionId: header.transactionId,
+        },
+      },
+    });
+
+    const payment = await cko.payments.request({
+      source: {
+        token: checkoutToken.token,
+      },
+      amount: 10,
+      currency: "USD",
+    });
+    res.send(payment);
+  } catch (error) {
+    console.log("Error while making payment: ", error);
+    res.send(error);
   }
 });
 
