@@ -93,7 +93,7 @@ app.get("/complete-article", async (req, res) => {
 
 app.post("/validate-session", async (req, res) => {
   const { appleUrl = "" } = req.body;
-  logger.info("Apple URL: ", appleUrl);
+  logger.info("Apple URL: ", { message: appleUrl });
   try {
     let = httpsAgent = new https.Agent({
       rejectUnauthorized: false,
@@ -115,18 +115,18 @@ app.post("/validate-session", async (req, res) => {
         httpsAgent,
       }
     );
-    logger.info("Validate session res: ", response.data);
+    logger.info("Validate session res: ", { message: response.data });
     res.send(response.data);
   } catch (error) {
     console.log("Error while validating session: ", error);
-    logger.error("Error while validating session: ", error);
+    logger.error("Error while validating session: ", { message: error });
     res.send(error);
   }
 });
 
 app.post("/pay", async (req, res) => {
   const { version, data, signature, header } = req.body.token.paymentData;
-  logger.info("/pay details", version, data, signature, header);
+  logger.info("/pay details", { version, data, signature, header });
   try {
     const checkoutToken = await cko.tokens.request({
       // infered type: "applepay"
@@ -141,7 +141,7 @@ app.post("/pay", async (req, res) => {
         },
       },
     });
-    logger.info("Checkout token: ", checkoutToken);
+    logger.info("Checkout token: ", { message: checkoutToken });
 
     const payment = await cko.payments.request({
       source: {
@@ -150,11 +150,11 @@ app.post("/pay", async (req, res) => {
       amount: 10,
       currency: "USD",
     });
-    logger.info("Payment res: ", payment);
+    logger.info("Payment res: ", { message: payment });
     res.send(payment);
   } catch (error) {
     console.log("Error while making payment: ", error);
-    logger.error("Error while making payment: ", error);
+    logger.error("Error while making payment: ", { message: error });
     res.send(error);
   }
 });
