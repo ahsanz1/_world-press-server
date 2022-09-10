@@ -113,7 +113,7 @@ app.post("/validate-session", async (req, res) => {
       appleUrl,
       {
         merchantIdentifier: "merchant.com.lazurde.sandbox",
-        domainName: "https://dev-lazurde.vercel.app",
+        domainName: "dev-lazurde.vercel.app",
         displayName: "Lazurde",
       },
       {
