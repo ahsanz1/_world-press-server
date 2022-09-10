@@ -153,7 +153,7 @@ app.post("/pay", async (req, res) => {
       source: {
         token: checkoutToken.token,
       },
-      amount: 10,
+      amount: 100,
       currency: "USD",
     });
     // logger.info("Payment res: ", { message: payment });
