@@ -99,7 +99,6 @@ app.post("/validate-session", async (req, res) => {
   const {
     appleUrl = "https://apple-pay-gateway-cert.apple.com/paymentservices/startSession",
   } = req.body;
-  logger.info("Apple URL: ", { message: appleUrl });
   try {
     let httpsAgent = new https.Agent({
       rejectUnauthorized: false,
@@ -121,8 +120,7 @@ app.post("/validate-session", async (req, res) => {
         httpsAgent,
       }
     );
-    // logger.info("Validate session res: ", { message: response.data });
-    res.send(response.data);
+    res.status(200).json(response.data);
   } catch (error) {
     console.log("Error while validating session: ", error);
     res.status(400).json({
