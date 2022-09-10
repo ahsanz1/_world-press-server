@@ -131,7 +131,8 @@ app.post("/validate-session", async (req, res) => {
 
 app.post("/pay", async (req, res) => {
   const { version, data, signature, header } = req.body.token.paymentData;
-  logger.info("/pay details", { version, data, signature, header });
+  // logger.info("/pay details", { version, data, signature, header });
+  console.log("Pay details: ", { version, data, signature, header });
   try {
     const checkoutToken = await cko.tokens.request({
       // infered type: "applepay"
@@ -146,8 +147,8 @@ app.post("/pay", async (req, res) => {
         },
       },
     });
-    logger.info("Checkout token: ", { message: checkoutToken });
-
+    // logger.info("Checkout token: ", { message: checkoutToken });
+    console.log("Checkout token: ", checkoutToken);
     const payment = await cko.payments.request({
       source: {
         token: checkoutToken.token,
@@ -155,11 +156,12 @@ app.post("/pay", async (req, res) => {
       amount: 10,
       currency: "USD",
     });
-    logger.info("Payment res: ", { message: payment });
-    res.send(payment);
+    // logger.info("Payment res: ", { message: payment });
+    console.log("Payment res: ");
+    res.status(200).json(payment);
   } catch (error) {
     console.log("Error while making payment: ", error);
-    logger.error("Error while making payment: ", { message: error });
+    // logger.error("Error while making payment: ", { message: error });
     res.send(error);
   }
 });
