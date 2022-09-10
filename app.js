@@ -157,7 +157,7 @@ app.post("/pay", async (req, res) => {
       currency: "USD",
     });
     // logger.info("Payment res: ", { message: payment });
-    console.log("Payment res: ");
+    console.log("Payment res: ", payment);
     res.status(200).json(payment);
   } catch (error) {
     console.log("Error while making payment: ", error);
