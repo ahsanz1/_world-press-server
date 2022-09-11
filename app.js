@@ -97,7 +97,10 @@ app.get("/complete-article", async (req, res) => {
 app.post("/validate-session", async (req, res) => {
   console.log("Request Body: ", req.body);
   const {
-    appleUrl = "https://apple-pay-gateway-cert.apple.com/paymentservices/startSession",
+    appleUrl = "",
+    merchantIdentifier = "",
+    domainName = "",
+    displayName = "",
   } = req.body;
   try {
     let httpsAgent = new https.Agent({
@@ -112,9 +115,9 @@ app.post("/validate-session", async (req, res) => {
     let response = await axios.post(
       appleUrl,
       {
-        merchantIdentifier: "merchant.com.lazurde.sandbox",
-        domainName: "dev-lazurde.vercel.app",
-        displayName: "Lazurde",
+        merchantIdentifier: merchantIdentifier,
+        domainName: domainName,
+        displayName: displayName,
       },
       {
         httpsAgent,
@@ -131,8 +134,15 @@ app.post("/validate-session", async (req, res) => {
 
 app.post("/pay", async (req, res) => {
   const { version, data, signature, header } = req.body.token.paymentData;
-  // logger.info("/pay details", { version, data, signature, header });
-  console.log("Pay details: ", { version, data, signature, header });
+  const { amount = 15, currency = "USD" } = req.body;
+  console.log("Pay details: ", {
+    version,
+    data,
+    signature,
+    header,
+    amount,
+    currency,
+  });
   try {
     const checkoutToken = await cko.tokens.request({
       // infered type: "applepay"
@@ -147,22 +157,19 @@ app.post("/pay", async (req, res) => {
         },
       },
     });
-    // logger.info("Checkout token: ", { message: checkoutToken });
     console.log("Checkout token: ", checkoutToken);
     const payment = await cko.payments.request({
       source: {
         token: checkoutToken.token,
       },
-      amount: 1000,
-      currency: "USD",
+      amount: amount * 100,
+      currency: currency,
     });
-    // logger.info("Payment res: ", { message: payment });
     console.log("Payment res: ", payment);
     res.status(200).json(payment);
   } catch (error) {
     console.log("Error while making payment: ", error);
-    // logger.error("Error while making payment: ", { message: error });
-    res.send(error);
+    res.status(400).json({ message: error.message });
   }
 });
 
