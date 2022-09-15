@@ -132,9 +132,9 @@ app.post("/validate-session", async (req, res) => {
   }
 });
 
-app.post("/pay", async (req, res) => {
+app.post("/exchange-token", async (req, res) => {
   const { version, data, signature, header } = req.body.token.paymentData;
-  const { amount = 15, currency = "USD" } = req.body;
+  // const { amount = 15, currency = "USD" } = req.body;
   console.log("Pay details: ", {
     version,
     data,
@@ -158,15 +158,16 @@ app.post("/pay", async (req, res) => {
       },
     });
     console.log("Checkout token: ", checkoutToken);
-    const payment = await cko.payments.request({
-      source: {
-        token: checkoutToken.token,
-      },
-      amount: amount * 100,
-      currency: currency,
-    });
-    console.log("Payment res: ", payment);
-    res.status(200).json(payment);
+    // const payment = await cko.payments.request({
+    //   source: {
+    //     token: checkoutToken.token,
+    //   },
+    //   amount: amount * 100,
+    //   currency: currency,
+    // });
+    // console.log("Payment res: ", payment);
+    // res.status(200).json(payment);
+    res.status(200).json(checkoutToken);
   } catch (error) {
     console.log("Error while making payment: ", error);
     res.status(400).json({ message: error.message });
