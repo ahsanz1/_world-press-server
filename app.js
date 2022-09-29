@@ -12,8 +12,8 @@ const logger = require("heroku-logger");
 const bodyParser = require("body-parser");
 const app = express();
 
-const cko = new Checkout("sk_test_1f05c2d3-0a01-47c8-807e-a10ec17ea170", {
-  pk: "pk_test_99ac8b62-1c16-4614-a43e-ea3a998206ef",
+const cko = new Checkout("sk_sbox_jadr5ojlwokq64cmgyft7iywsej", {
+  pk: "pk_sbox_bvcyopxyd7xkmslkri57n2hbp4w",
 });
 
 app.use(bodyParser.json());
