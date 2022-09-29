@@ -133,7 +133,7 @@ app.post("/validate-session", async (req, res) => {
 });
 
 app.post("/exchange-token", async (req, res) => {
-  const { version, data, signature, header } = req.body.token.paymentData;
+  const { version = '', data = '', signature = '', header = '' } = req.body.token.paymentData;
   // const { amount = 15, currency = "USD" } = req.body;
   console.log("Pay details: ", {
     version,
