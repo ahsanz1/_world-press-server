@@ -140,8 +140,6 @@ app.post("/exchange-token", async (req, res) => {
     data,
     signature,
     header,
-    amount,
-    currency,
   });
   try {
     const checkoutToken = await cko.tokens.request({
